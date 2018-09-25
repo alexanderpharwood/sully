@@ -6,7 +6,7 @@
 
     /**
      *
-     * Sully - V1.0
+     * Sully - 1.0.0
      * By Alexander P. Harwood
      * Copyright 2018 Alexander P. Harwood - MIT Licence
      *
@@ -21,8 +21,6 @@
         //Global namespace object
         var Sully = {};
 
-        Sully.production = false;
-
         Sully.version = "1.0.0";
 
         Sully.domContainer = {};
@@ -36,6 +34,8 @@
         Sully.routeProvider = {};
 
         Sully.notFoundRoute = {};
+
+        Sully.html5Routing = false;
 
         Sully.exceptionMessage = "Oops! An error occured processing your request.";
 
@@ -58,59 +58,54 @@
             return path;
 
         }
+
         function parseQueryString(){
 
-            var hash = window.location.hash.substr(1);
+            var queryParamsString = getQueryString();
 
-            var hash = hash.substr(hash.indexOf('?') + 1, hash.length);
+            if (typeof queryParamsString !== "undefined"){
 
-            var result = hash.split('&').reduce(function (result, item) {
+                var result = queryParamsString.split('&').reduce(function (result, item) {
 
-                var parts = item.split('=');
+                    var parts = item.split('=');
 
-                result[parts[0]] = parts[1];
+                    result[parts[0]] = parts[1];
+
+                    return result;
+
+                }, {});
 
                 return result;
-
-            }, {});
-
-            return result;
-
-        }
-        function getQueryString() {
-
-            var hash = window.location.hash.substr(1);
-
-            if (hash.indexOf('/?') === -1) {
-
-                return undefined;
-
-            } else {
-
-                var hash = hash.substr(hash.indexOf('/?') + 1, hash.length);
-
-                if (hash === "") {
-
-                    return undefined;
-
-                } else {
-
-                    return hash;
-
-                }
 
             }
 
         }
+
+        function getQueryString() {
+
+            var queryParams = window.location.search;
+
+            if(queryParams === ""){
+
+                return undefined;
+
+            }
+
+            return queryParams.substr(1, queryParams.length);
+
+        }
+
         function getRouteFromUrl() {
 
-            if(Sully.routingMethod === "HASH"){
+            var route;
 
-                route = window.location.hash.substr(1, window.location.hash.length);
+            if(Sully.html5Routing){
+
+                route = window.location.pathname.replace(Sully.basePath, '');
 
             } else {
 
-                var route = window.location.pathname.replace(Sully.basePath, '');
+                route = window.location.hash.substr(1, window.location.hash.length);
 
             }
 
@@ -123,21 +118,8 @@
             return route;
 
         }
-        function loadController(params) {
 
-            // if (typeof Sully.routeProvider[params.route] === "undefined") {
-            //
-            //     params.controller = Sully.notFoundRoute.controller;
-            //
-            //     params.method = Sully.notFoundRoute.method;
-            //
-            //     params.middleware = Sully.notFoundRoute.middleware;
-            //
-            // } else {
-            //
-            //     params.middleware = Sully.routeProvider[params.route].middleware;
-            //
-            // }
+        function loadController(params) {
 
             //Check for the resence of any applicable middleware
             if(typeof params.middleware !== "undefined" && params.middleware.constructor === Array){
@@ -160,6 +142,7 @@
             Sully.controllerProvider[params.controller][params.method](params.requestData);
 
         }
+
         function parseTemplate(template, viewData) {
 
             template = template.replace(/(\r\n|\n|\r)/gm, "");
@@ -191,6 +174,7 @@
             return template;
 
         }
+
         function routeFromUrl() {
 
             var isValidRoute = false;
@@ -213,7 +197,7 @@
 
                 var routeDataKeys = route.match(/{(.*?)}/g);
 
-                var routeRegex = new RegExp("^" + route.replace(/{(.*?)}/g, "(.*?)").replace(new RegExp("/", "g"), "\\/?") + "$", "g");
+                var routeRegex = new RegExp("^" + route.replace(/{(.*?)}/g, "(.*?)").replace(new RegExp("/", "g"), "\\/?") + "(\/*)?$", "g");
 
                 var routeMatch = routeParams.route.match(routeRegex);
 
@@ -279,11 +263,17 @@
          * API function (globally accessible under Sully)
          */
 
-        Sully.navigate = function(params) {
+        Sully.routeTo = function(route) {
 
-            var route = params.route + (typeof params.queryData !== "undefined" ? "/?" + params.queryData : '');
+            if (Sully.html5Routing){
 
-            window.history.pushState({}, null, getBasePath(params.route));
+                window.history.pushState({}, null, getBasePath(route));
+
+            } else {
+
+                window.location.hash = route;
+
+            }
 
             routeFromUrl();
 
@@ -361,15 +351,13 @@
 
         Sully.init = function (params) {
 
-            if(!Sully.production){
+            if (typeof document.getElementsByTagName('base')[0] === "undefined") {
 
-                console.log("Sully.js, development version " + Sully.version + "");
+                fatalError("Missing <base> tag in html.");
 
             }
 
-            Sully.basePath = params.basePath;
-
-            Sully.routingMethod = params.routingMethod;
+            Sully.basePath = document.getElementsByTagName('base')[0].getAttribute("href");
 
             Sully.interceptAnchorWithClass = params.interceptAnchorWithClass;
 
@@ -381,34 +369,31 @@
 
             }
 
-            //For clicking back and forward in the browser
-            if (Sully.routingMethod === "HISTORY"){
+            //Check the history API is supported
+            if (window.history && history.pushState){
 
-                //Check the history API is supported
-                if(window.history && history.pushState){
+                //listen for state changes
+                window.onpopstate = function (event) {
 
-                    window.onpopstate = function (event) {
+                    routeFromUrl();
 
-                        routeFromUrl();
+                };
 
-                    };
+                //Set the current state
+                window.history.replaceState({}, null, window.location.path);
 
-                    //we can use the history api for routing without hashtags or hashbangs
-                    window.history.replaceState({}, null, window.location.path);
-
-                } else{
-
-                    fatalError('Browser does not support routing method.');
-
-                }
+                Sully.html5Routing = true;
 
             } else {
 
+                //listen for state changes
                 window.onhashchange = function(){
 
                     routeFromUrl();
 
                 };
+
+                Sully.html5Routing = false;
 
             }
 
@@ -426,11 +411,7 @@
 
                             var route = path[i].getAttribute('href');
 
-                            window.history.pushState({}, null, getBasePath(route));
-
-                            routeFromUrl();
-
-                            return true;
+                            Sully.routeTo(route);
 
                         }
 
