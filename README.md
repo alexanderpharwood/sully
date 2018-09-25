@@ -1,6 +1,11 @@
 
 # Sully.js source code
 
+This is the repository for Sully's source. If you are looking to use Sully, please [check us out on npm](https://www.npmjs.com/package/sully).
+
+
+**For development only**
+
 ```
 git clone https://github.com/alexanderpharwood/sully.git
 ```
