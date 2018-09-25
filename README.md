@@ -13,14 +13,16 @@ git clone https://github.com/alexanderpharwood/sully.git
 ```
 npm install
 ```
+You should be good to branch and get your dev on!
 
-**BUILD UNCOMPRESSED VERSION**
+
+**Build uncompressed version**
 ```
 rollup src/main.js --format umd --name "Sully" --file dist/sully-1.0.0.js;
 ```
 
 
-**BUILD PRODUCTION, MINIFIED VERSION**
+**Build production, minified version**
 ```
 uglifyjs dist/sully-1.0.0.js -c -m -o dist/sully-1.0.0.min.js
 ```
