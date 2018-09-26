@@ -15,14 +15,8 @@ npm install
 ```
 You should be good to branch and get your dev on!
 
-
-**Build uncompressed version**
+compile uncompressed and compressed versions to test your code:
 ```
-rollup src/main.js --format umd --name "Sully" --file dist/sully-1.0.0.js;
-```
+npm run build
 
-
-**Build production, minified version**
-```
-uglifyjs dist/sully-1.0.0.js -c -m -o dist/sully-1.0.0.min.js
 ```
