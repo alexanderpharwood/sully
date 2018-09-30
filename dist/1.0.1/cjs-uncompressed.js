@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  *
  * Sully - 1.0.0
@@ -265,7 +267,7 @@
 
             middleware: params.middleware
 
-        }
+        };
 
     };
 
@@ -377,7 +379,7 @@
 
         Sully.renderView(template, viewDidLoad, scrollToTop);
 
-    }
+    };
 
     Sully.init = function (params) {
 
@@ -419,7 +421,7 @@
 
                 routeFromUrl();
 
-            }
+            };
 
             Sully.html5Routing = false;
 
@@ -453,4 +455,4 @@
 
     };
 
-    export default Sully;
+module.exports = Sully;

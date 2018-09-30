@@ -18,8 +18,6 @@ var Sully = (function () {
         //Global namespace object
         var Sully = {};
 
-        Sully.version = "1.0.0";
-
         Sully.domContainer = {};
 
         Sully.controllerProvider = {};
@@ -137,38 +135,6 @@ var Sully = (function () {
             }
 
             Sully.controllerProvider[params.controller][params.method](params.requestData);
-
-        }
-
-        function parseTemplate(template, viewData) {
-
-            template = template.replace(/(\r\n|\n|\r)/gm, "");
-
-            var valuesArr = template.match(/{{(.*?)}}/g);
-
-            for (var i in valuesArr) {
-
-                valuesArr[i] = valuesArr[i].substr(2, valuesArr[i].length - 4);
-
-                valuesArr[i].trim();
-
-                var pointer = valuesArr[i].split(':', 1)[0];
-
-                switch (pointer) {
-
-                    case "view":
-
-                        var partial = Sully.viewProvider[valuesArr[i].substr(pointer.length + 1, valuesArr[i].length)];
-
-                        template = template.replace("{{" + valuesArr[i] + "}}", parseTemplate(partial, viewData));
-
-                        break;
-
-                }
-
-            }
-
-            return template;
 
         }
 
@@ -318,31 +284,101 @@ var Sully = (function () {
 
         };
 
-        Sully.getViewTemplate = function(name){
+        Sully.getView = function(name){
 
             return Sully.viewProvider[name];
 
         };
 
-        Sully.renderView = function (params) {
+        //Alias for Sully.buildView to be called directs on an instance of String.
+        String.prototype.buildView = function(data){
 
-            if (typeof params.template === "undefined"){
+            return Sully.buildView(this, data);
 
-                fatalError("ERROR: view not found: " + params.view);
+        };
+
+        Sully.buildView = function(template, data){
+
+            if (typeof template === "undefined"){
+
+                fatalError("Template is undefined");
 
             }
 
-            var parsedTemplate = parseTemplate(params.template, typeof params.data === "undefined" ? {} : params.data);
+            template = template.replace(/(\r\n|\n|\r)/gm, "");
 
-            Sully.domContainer.innerHTML = parsedTemplate;
+            var valuesArr = template.match(/{{(.*?)}}/g);
 
-            params.viewDidLoad();
+            for (var i in valuesArr) {
 
-            if(typeof params.scrollToTop === "undefined" || params.scrollToTop){
+                valuesArr[i] = valuesArr[i].substr(2, valuesArr[i].length - 4);
+
+                valuesArr[i].trim();
+
+                var pointer = valuesArr[i].split(':', 1)[0];
+
+                switch (pointer) {
+
+                    case "view":
+
+                        var partial = Sully.viewProvider[valuesArr[i].substr(pointer.length + 1, valuesArr[i].length)];
+
+                        template = template.replace("{{" + valuesArr[i] + "}}", Sully.buildView(partial, data));
+
+                        break;
+
+                    default:
+
+                        template = template.replace("{{" + valuesArr[i] + "}}", typeof data[valuesArr[i]] !== "undefined" ? data[valuesArr[i]] : "");
+
+                    break;
+
+                }
+
+            }
+
+            return template;
+
+        };
+
+        Sully.renderView = function (template, viewDidLoad, scrollToTop) {
+
+            if (typeof template === "undefined"){
+
+                fatalError("Template is undefined");
+
+            }
+
+            Sully.domContainer.innerHTML = template;
+
+            if (typeof scrollToTop === "undefined" || scrollToTop){
 
                 document.body.scrollTop = document.documentElement.scrollTop = 0;
 
             }
+
+            if (typeof viewDidLoad !== "undefined" && viewDidLoad){
+
+                viewDidLoad();
+
+            }
+
+        };
+
+        //This is an alias for: getView, buildView, and renderView
+        Sully.serveView = function(viewName, data, viewDidLoad, scrollToTop){
+
+            var template = Sully.getView(viewName);
+
+            if (typeof template === "undefined"){
+
+                fatalError("View " + "'" + viewName + "' not found");
+
+            }
+
+            template = Sully.buildView(template, data);
+
+            Sully.renderView(template, viewDidLoad, scrollToTop);
 
         };
 
@@ -355,8 +391,6 @@ var Sully = (function () {
             }
 
             Sully.basePath = document.getElementsByTagName('base')[0].getAttribute("href");
-
-            Sully.interceptAnchorWithClass = params.interceptAnchorWithClass;
 
             Sully.domContainer = document.getElementById(params.container);
 
@@ -402,7 +436,7 @@ var Sully = (function () {
 
                     if(path[i].nodeName === "A"){
 
-                        if(typeof Sully.interceptAnchorWithClass === "undefined" || path[i].classList.contains(Sully.interceptAnchorWithClass)){
+                        if(!path[i].classList.contains("no-route-catch")){
 
                             event.preventDefault();
 
