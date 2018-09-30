@@ -118,7 +118,7 @@
 
             for (var i in params.middleware){
 
-                Sully.middlewareProvider[params.middleware[i]].run(params.requestData);
+                Sully.middlewareProvider[params.middleware[i]].run(params.request);
 
             }
 
@@ -127,11 +127,11 @@
         //Check for the presence of a constructor
         if (typeof Sully.controllerProvider[params.controller].constructor !== "undefined"){
 
-            Sully.controllerProvider[params.controller].constructor(params.requestData);
+            Sully.controllerProvider[params.controller].constructor(params.request);
 
         }
 
-        Sully.controllerProvider[params.controller][params.method](params.requestData);
+        Sully.controllerProvider[params.controller][params.method](params.request);
 
     }
 
@@ -143,7 +143,9 @@
 
         routeParams.route = getRouteFromUrl();
 
-        routeParams.requestData = {};
+        routeParams.request = {};
+
+        routeParams.request.previousUrl = window.location.href;
 
         if (typeof routeParams.route === "undefined" || routeParams.route === "") {
 
@@ -193,7 +195,7 @@
 
                 var thisDataKey = routeDataKeys[key].substr(1, routeDataKeys[key].length - 2);
 
-                routeParams.requestData[thisDataKey] = routeDataValues[routeDataIndex];
+                routeParams.request[thisDataKey] = routeDataValues[routeDataIndex];
 
                 routeDataIndex++;
 
@@ -211,7 +213,7 @@
 
         if (typeof getQueryString() !== "undefined") {
 
-            routeParams.requestData.queryData = parseQueryString();
+            routeParams.request.queryData = parseQueryString();
 
         }
 
@@ -224,6 +226,13 @@
      */
 
     Sully.routeTo = function(route) {
+
+        //Do not route if we are already on this page.
+        if (window.location.origin + getBasePath(route) === window.location.href){
+
+            return false;
+
+        }
 
         if (Sully.html5Routing){
 

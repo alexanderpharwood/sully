@@ -4,9 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "build-browser": "rollup src/main.js --format iife --name \"Sully\" --file dist/$npm_package_config_version/browser-uncompressed.js; uglifyjs dist/$npm_package_config_version/browser-uncompressed.js -c -m -o dist/$npm_package_config_version/browser-compressed.js; echo 'Build compiled successfully.'",
-    "build-node": "rollup src/main.js --format cjs --name \"Sully\" --file dist/$npm_package_config_version/cjs-uncompressed.js; uglifyjs dist/$npm_package_config_version/cjs-uncompressed.js -c -m -o dist/$npm_package_config_version/cjs-compressed.js; echo 'Build compiled successfully.'",
-    "build": "rollup src/main.js --format umd --name \"Sully\" --file dist/$npm_package_config_version/umd-uncompressed.js; uglifyjs dist/$npm_package_config_version/umd-uncompressed.js -c -m -o dist/$npm_package_config_version/umd-compressed.js; echo 'Build compiled successfully.'"
+    "build": "rollup src/main.js --format umd --name \"Sully\" --file dist/$npm_package_config_version/sully-$npm_package_config_version.js; uglifyjs dist/$npm_package_config_version/sully-$npm_package_config_version.js -c -m -o dist/$npm_package_config_version/sully-$npm_package_config_version.min.js; echo 'Build compiled successfully.'"
   },
   "author": "Alexander P. Harwood",
   "license": "ISC",
