@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "build": "rollup src/main.js --format umd --name \"Sully\" --file dist/$npm_package_config_version/sully-$npm_package_config_version.js; uglifyjs dist/$npm_package_config_version/sully-$npm_package_config_version.js -c -m -o dist/$npm_package_config_version/sully-$npm_package_config_version.min.js; echo 'Build compiled successfully.'"
+    "build": "rollup src/main.js --format umd --name \"Sully\" --file dist/$npm_package_config_version/sully-$npm_package_config_version.js; uglifyjs dist/$npm_package_config_version/sully-$npm_package_config_version.js -c -m -o dist/$npm_package_config_version/sully-$npm_package_config_version.min.js;"
   },
   "author": "Alexander P. Harwood",
   "license": "ISC",

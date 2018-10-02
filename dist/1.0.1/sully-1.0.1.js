@@ -6,8 +6,10 @@
 
     /**
      *
-     * Sully - 1.0.0
+     * Sully.js - 1.0.1
      * By Alexander P. Harwood
+     * Github core: https://github.com/alexanderpharwood/sully
+     * Github cli: https://github.com/alexanderpharwood/sully-cli
      * Copyright 2018 Alexander P. Harwood - MIT Licence
      *
      */
@@ -109,7 +111,7 @@
 
             if (route === "") {
 
-                route = undefined;
+                route = "/";
 
             }
 
@@ -141,7 +143,18 @@
 
         }
 
+        //Have a method that checks whether the url is a html5 one or a hash one.
+        function checkUrlType(){
+
+            var url = window.location.href;
+
+            return url;
+
+        }
+
         function routeFromUrl() {
+
+            console.log(checkUrlType());
 
             var isValidRoute = false;
 
@@ -151,7 +164,7 @@
 
             routeParams.request = {};
 
-            routeParams.request.previousUrl = window.location.href;
+            routeParams.request.url = window.location.href;
 
             if (typeof routeParams.route === "undefined" || routeParams.route === "") {
 
