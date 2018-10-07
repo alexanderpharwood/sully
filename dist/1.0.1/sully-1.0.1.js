@@ -36,6 +36,30 @@
      *  Utility functions (private to this scope)
      */
 
+    function isObject(value) {
+
+        return value && typeof value === 'object' && value.constructor === Object;
+
+    }
+
+    function isArray(value) {
+
+        return value && typeof value === 'object' && value.constructor === Array;
+
+    }
+
+    function isFunction (value) {
+
+        return typeof value === 'function';
+
+    }
+
+    function isUndefined (value) {
+
+        return typeof value === "undefined";
+
+    }
+
     function fatalError(message){
 
             Sully.domContainer.innerHTML = '<h3 id="exceptionMessage">' + Sully.exceptionMessage + '</h3>';
@@ -56,7 +80,7 @@
 
         var queryParamsString = getQueryString();
 
-        if (typeof queryParamsString !== "undefined"){
+        if (!isUndefined(queryParamsString)){
 
             var result = queryParamsString.split('&').reduce(function (result, item) {
 
@@ -127,7 +151,7 @@
     function loadController(params) {
 
         //Check for the resence of any applicable middleware
-        if (typeof params.middleware !== "undefined" && params.middleware.constructor === Array){
+        if (!isUndefined(params.middleware) && isArray(params.middleware.constructor)){
 
             for (var i in params.middleware){
 
@@ -138,7 +162,7 @@
         }
 
         //Check for the presence of a constructor
-        if (typeof Sully.controllerProvider[params.controller].constructor !== "undefined"){
+        if (!isUndefined(Sully.controllerProvider[params.controller].constructor)){
 
             Sully.controllerProvider[params.controller].constructor(params.request);
 
@@ -182,7 +206,7 @@
 
         routeParams.request.url = window.location.href;
 
-        if (typeof routeParams.route === "undefined" || routeParams.route === "") {
+        if (isUndefined(routeParams.route) || routeParams.route === "") {
 
             routeParams.route = "/";
 
@@ -246,7 +270,7 @@
 
         }
 
-        if (typeof getQueryString() !== "undefined") {
+        if (!isUndefined(getQueryString())) {
 
             routeParams.request.queryData = parseQueryString();
 
@@ -340,9 +364,15 @@
 
     Sully.buildView = function(template, data){
 
-        if (typeof template === "undefined"){
+        if (isUndefined(template)){
 
             fatalError("Template is undefined");
+
+        }
+
+        if (!isObject(data)){
+
+            data = {};
 
         }
 
@@ -370,7 +400,7 @@
 
                 default:
 
-                    template = template.replace("{{" + valuesArr[i] + "}}", typeof data[valuesArr[i]] !== "undefined" ? data[valuesArr[i]] : "");
+                    template = template.replace("{{" + valuesArr[i] + "}}", !isUndefined(data[valuesArr[i]]) ? data[valuesArr[i]] : "");
 
                 break;
 
@@ -384,7 +414,7 @@
 
     Sully.renderView = function (template, viewDidLoad, scrollToTop) {
 
-        if (typeof template === "undefined"){
+        if (isUndefined(template)){
 
             fatalError("Template is undefined");
 
@@ -392,13 +422,13 @@
 
         Sully.domContainer.innerHTML = template;
 
-        if (typeof scrollToTop === "undefined" || scrollToTop){
+        if (scrollToTop){
 
             document.body.scrollTop = document.documentElement.scrollTop = 0;
 
         }
 
-        if (typeof viewDidLoad !== "undefined" && viewDidLoad){
+        if (isFunction(viewDidLoad)){
 
             viewDidLoad();
 
@@ -411,7 +441,7 @@
 
         var template = Sully.getView(viewName);
 
-        if (typeof template === "undefined"){
+        if (isUndefined(template)){
 
             fatalError("View " + "'" + viewName + "' not found");
 
@@ -431,7 +461,7 @@
 
         }
 
-        if (typeof document.getElementsByTagName('base')[0] === "undefined") {
+        if (isUndefined(document.getElementsByTagName('base')[0])) {
 
             fatalError("Missing <base> tag in html.");
 
@@ -441,7 +471,7 @@
 
         Sully.domContainer = document.getElementById(params.container);
 
-        if (typeof params.exceptionMessage !== "undefined"){
+        if (!isUndefined(params.exceptionMessage)){
 
             Sully.exceptionMessage = params.exceptionMessage;
 
